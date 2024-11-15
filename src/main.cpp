@@ -3,10 +3,6 @@
 #include <sstream>
 #include "lexer.h"
 
-// struct Token {
-    
-// }
-
 int main(int argc, char** argv) {
     if (argc != 2) {
         std::cerr << "Usage should be..." << std::endl;
@@ -25,7 +21,7 @@ int main(int argc, char** argv) {
         contents = contents_stream.str();
     }
 
-    
+    std::cout << contents << std::endl;
 
     return EXIT_SUCCESS;
 }
