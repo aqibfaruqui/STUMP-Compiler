@@ -4,6 +4,8 @@
 #include <fstream>
 #include <cctype>
 
+#include "lexer.h"
+
 enum class TokenType {
     // Keywords
     FUNCTION,
@@ -13,7 +15,7 @@ enum class TokenType {
     RETURN,
     
     // Types
-    INT,
+    INT_LIT,
     BOOL,
     
     // Literals
@@ -35,7 +37,7 @@ enum class TokenType {
     RBRACKET,
     LBRACE,
     RBRACE,
-    SEMICOLON,
+    SEMI,
     COMMA,
     
     // Special
