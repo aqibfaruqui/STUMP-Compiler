@@ -1,9 +1,8 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-struct Token {
-   
-};
+#include <iostream>
+#include <optional>
 
 enum class TokenType {
     // Keywords
@@ -42,6 +41,11 @@ enum class TokenType {
     // Special
     END_OF_FILE,
     INVALID
+};
+
+struct Token {
+   TokenType type;
+   std::optional<std::string> value;
 };
 
 #endif

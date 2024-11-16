@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/stump.dir/src/main.cpp.o CMakeFiles/stump.dir/src/lexer.cpp.o CMakeFiles/stump.dir/src/parser.cpp.o -o stump 
