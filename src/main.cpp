@@ -5,12 +5,6 @@
 #include "lexer.h"
 #include "parser.h"
 
-/*
- * Input: program file
- * Output: vector of tokens
- * Ensuring tokens start with a letter?
- */
-
 int main(int argc, char** argv) {
     if (argc != 2) {
         std::cerr << "Usage should be..." << std::endl;

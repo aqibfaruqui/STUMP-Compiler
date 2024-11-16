@@ -39,10 +39,10 @@ public:
 
 private:
     /* Looking ahead n characters */
-    [[nodiscard]] std::optional<char> peek(int ahead = 0) const;
+    [[nodiscard]] inline std::optional<char> peek(int ahead = 0) const;
 
     /* Consuming next character */
-    char consume();
+    inline char consume();
 
     const std::string m_src;
     size_t m_idx = 0;

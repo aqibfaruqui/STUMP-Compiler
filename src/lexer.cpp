@@ -2,12 +2,11 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include <cctype>
 
 #include "lexer.h"
 
 
-/*inline explicit*/ Lexer::Lexer (const std::string& src) 
+/*explicit*/ Lexer::Lexer(const std::string& src) 
     : m_src(std::move(src)), m_idx(0) {}
 
 std::vector<Token> Lexer::tokenise() {
@@ -29,8 +28,7 @@ std::vector<Token> Lexer::tokenise() {
             } else {
                 std::cerr << "invalid integer" << std::endl;
                 exit(EXIT_FAILURE);
-        }
-            
+            }
         }
 
         /* RETURN */
