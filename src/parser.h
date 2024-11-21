@@ -3,14 +3,16 @@
 
 #include <iostream>
 #include <optional>
+#include <vector>
+#include <memory>
+#include "lexer.h"
 
 
-struct NodeFunction { };
-
-struct NodeExpr { };
-
-struct NodeReturn { };
-
+struct NodeExpression;
+struct NodeStatement;
+struct NodeFunction;
+struct NodeBlock;
+struct NodeProgram;
 
 class Parser {
 public:
@@ -18,14 +20,26 @@ public:
     explicit Parser(const std::vector<Token>& tokens);
 
     /* Parsing input tokens */
-    std::optional<NodeReturn> parse();
+    std::unique_ptr<NodeProgram> parse();
 
 private:
-    /* Looking ahead n tokens */
-    [[nodiscard]] inline std::optional<Token> peek(int ahead = 0) const;
+    /* Parsing different abstracted constructs */
+    std::unique_ptr<NodeExpression> parseExpression();
+    std::unique_ptr<NodeExpression> parseAssignment();
+    std::unique_ptr<NodeStatement> parseStatement();
+    std::unique_ptr<NodeBlock> parseBlock();
+    std::unique_ptr<NodeFunction> parseFunction();
 
-    /* Consuming next token */
-    inline Token consume();
+    /* Navigating and validating tokens */
+    Token advance();
+    bool check(TokenType type);
+    bool checkAdvance(TokenType type);
+    bool atEnd();
+
+    /* Looking at/consuming previous/current token, should we use ahead for peek? */
+    std::optional<Token> peek() const;
+    Token previous() const;
+    Token consume(TokenType type);
 
     const std::vector<Token> m_tokens;
     size_t m_idx = 0;

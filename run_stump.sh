@@ -1,7 +1,7 @@
-g++ -o main src/main.cpp src/lexer.cpp src/parser.cpp
+g++ -o src/main src/main.cpp src/lexer.cpp src/parser.cpp
 if [ $? -eq 0 ]; then
     echo "Compilation successful!"
-    ./main ../samples/test.stump
+    ./src/main ./samples/test.stump
 else
     echo "Compilation unsuccessful"
     exit 1

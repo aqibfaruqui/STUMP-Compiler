@@ -22,7 +22,7 @@ enum class TokenType {
 
     // Bit operations
     BIT_AND, BIT_OR, BIT_XOR, BIT_NOT,
-    SHIFT_LEFT, SHIFT_RIGHT,
+    SHIFT_ASR, SHIFT_ROR, SHIFT_RRC,
     
     // Symbols
     LBRACKET, RBRACKET, LBRACE, RBRACE, 
@@ -32,6 +32,7 @@ enum class TokenType {
     SET_LED, CLEAR_LED,
     SET_CURSOR, PRINT_LCD,
     READ_KEY, WAIT_KEY,  
+    PLAY_SOUND, STOP_SOUND,
     DELAY,                  
     
     // Special
@@ -52,11 +53,14 @@ public:
     std::vector<Token> tokenise();
 
 private:
-    /* Looking ahead n characters */
-    [[nodiscard]] inline std::optional<char> peek(int ahead = 0) const;
+    /* Looking ahead n characters 
+        [[nodiscard]]? used for const member functions (member var not changed)
+        so return value must be of value 
+        - more useful for non const functions that also return something */
+    std::optional<char> peek(int ahead = 0) const;
 
     /* Consuming next character */
-    inline char consume();
+    char consume();
 
     const std::string m_src;
     size_t m_idx = 0;
