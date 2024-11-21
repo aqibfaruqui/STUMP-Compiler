@@ -1,8 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <iostream>
-#include <optional>
 #include <string>
 #include <vector>
 #include <memory>
@@ -12,11 +10,11 @@
 #include <fstream>
 #include "lexer.h"
 
-
 struct NodeExpression;
 struct NodeStatement;
-struct NodeFunction;
 struct NodeBody;
+struct NodeFunction;
+struct NodeVarDecl;
 struct NodeProgram;
 
 class Parser {
@@ -34,6 +32,7 @@ private:
     std::unique_ptr<NodeStatement> parseStatement();
     std::unique_ptr<NodeBody> parseBody();
     std::unique_ptr<NodeFunction> parseFunction();
+    std::unique_ptr<NodeVarDecl> parseVarDecl(Token type);
 
     /* Looking at/consuming previous/current token, should we use ahead for peek? */
     Token peek() const;
@@ -76,8 +75,20 @@ struct NodeFunction : NodeStatement {
         : name(std::move(n)), parameters(std::move(p)), body(std::move(b)) {}
 };
 
+struct NodeVarDecl : NodeStatement {
+    TokenType type;
+    std::string name;
+    std::unique_ptr<NodeExpression> expr;
+    bool global;
+
+    NodeVarDecl(TokenType t, std::string n, std::unique_ptr<NodeExpression> e, bool g = false)
+        : type(std::move(t)), name(std::move(n)), expr(std::move(e)), global(g) {}
+};
+
+
 struct NodeProgram {
     std::vector<std::unique_ptr<NodeFunction>> functions;
+    std::vector<std::unique_ptr<NodeVarDecl>> globals;
 };
 
 struct NodeAssignmentExpr : NodeExpression {
@@ -89,3 +100,26 @@ struct NodeAssignmentExpr : NodeExpression {
 }; 
 
 #endif
+
+/*
+ *
+ *  Program -> 
+ *             Global vars
+ *             Functions    -> 
+ *                              Function name
+ *                              Parameters
+ *                              Function body   ->
+ *                                                  Statements ->
+ *                                                                  Statement  (if, while, return, loops etc)
+ *                                                                  Expression (value-producing constants)          ->
+ *                                                                                                                      BIDMAS?
+ *                                                                  Assignment (variable declaration/reassignment)  -> 
+ *                                                                                                                      allocating memory?!   
+ *
+ * 
+ *
+ *
+ *
+ *
+ *
+ */

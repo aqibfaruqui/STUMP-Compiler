@@ -26,6 +26,8 @@ int main(int argc, char** argv) {
     std::vector<Token> tokens = lexer.tokenise();
 
     // PARSE
+    Parser parser(std::move(tokens));
+    std::unique_ptr<NodeProgram> program = parser.parse();
 
     std::cout << "success" << std::endl;
 

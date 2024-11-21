@@ -7,6 +7,9 @@ std::unique_ptr<NodeProgram> Parser::parse() {
     auto program = std::make_unique<NodeProgram>();
 
     while (!atEnd()) {
+        if (check(TokenType::INT) || check(TokenType::BOOL)) {
+            program->globals.push_back(parseVarDecl(peek(), true));
+        }
         program->functions.push_back(parseFunction());
     }
     return program;
@@ -48,6 +51,11 @@ std::unique_ptr<NodeBody> Parser::parseBody() {
 }
 
 std::unique_ptr<NodeStatement> Parser::parseStatement() {
+    auto stmt = std::make_unique<NodeStatement>();
+    
+    while (!check(TokenType::SEMI)) {
+        // stmt... // parse tokens of one body line
+    }
     return nullptr; // placeholder
 }
 
@@ -60,7 +68,19 @@ std::unique_ptr<NodeExpression> Parser::parseAssignment() {
     return expr; // placeholder
 }
 
+std::unique_ptr<NodeVarDecl> Parser::parseVarDecl(Token t, bool global = false) {
+    // parameter makes copy :( MODERNISE
+    consume(t.type);
+    auto name = consume(TokenType::IDENTIFIER).value.value();
 
+    std::unique_ptr<NodeExpression> expr = nullptr;
+    if (checkAdvance(TokenType::ASSIGN)) {
+        expr = parseExpression();
+    }
+
+    consume(TokenType::SEMI);
+    return std::make_unique<NodeVarDecl>(t.type, name, std::move(expr), global);
+}
 
 
 Token Parser::peek() const {

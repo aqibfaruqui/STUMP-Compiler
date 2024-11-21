@@ -1,5 +1,3 @@
-function main (param) {
-    return 42;
-}
+function one (is) {
 
-function name()
+}
