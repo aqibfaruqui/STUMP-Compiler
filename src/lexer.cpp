@@ -26,7 +26,7 @@ std::vector<Token> Lexer::tokenise() {
             }
         }
             
-        /* INT_LIT */
+        /* INT_LIT & FLOAT_LIT */
         else if (std::isdigit(peek().value())) {
             buffer.push_back(consume());
             while (peek().has_value() && std::isdigit(peek().value())) {
@@ -55,10 +55,7 @@ std::vector<Token> Lexer::tokenise() {
                 {"else", TokenType::ELSE},
                 {"function", TokenType::FUNCTION},
                 {"int", TokenType::INT},
-                {"bool", TokenType::BOOL},
-                {"void", TokenType::VOID},
-                {"true", TokenType::TRUE},
-                {"false", TokenType::FALSE},
+                {"float", TokenType::FLOAT},
                 {"setLED", TokenType::SET_LED},
                 {"clearLED", TokenType::CLEAR_LED},
                 {"setCursor", TokenType::SET_CURSOR},

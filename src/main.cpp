@@ -21,11 +21,16 @@ int main(int argc, char** argv) {
         contents = contents_stream.str();
     }
 
+
+    std::cout << "starting" << std::endl;
+
     // TOKENISE
     Lexer lexer(std::move(contents));
     std::vector<Token> tokens = lexer.tokenise();
 
-    // PARSE
+    std::cout << "successful lexing, now parsing" << std::endl;
+
+    PARSE
     Parser parser(std::move(tokens));
     std::unique_ptr<NodeProgram> program = parser.parse();
 

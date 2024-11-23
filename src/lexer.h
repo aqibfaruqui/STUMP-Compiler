@@ -3,16 +3,19 @@
 
 #include <iostream>
 #include <optional>
+#include <vector>
 
 enum class TokenType {
     // Keywords
     FUNCTION, WHILE, IF, ELSE, RETURN,
     
     // Types
-    INT, BOOL, VOID,
+    INT, FLOAT,
+    // no function return types so removed BOOL and VOID
     
     // Literals
-    INT_LIT, TRUE, FALSE, IDENTIFIER,
+    INT_LIT, FLOAT_LIT, IDENTIFIER,
+    // removed TRUE and FALSE
     
     // Operators
     PLUS, MINUS, MULTIPLY, DIVIDE, 

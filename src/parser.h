@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <queue>
+#include <stack>
 #include <memory>
 #include <utility>
 #include <iostream>
@@ -10,12 +12,14 @@
 #include <fstream>
 #include "lexer.h"
 
-struct NodeExpression;
-struct NodeStatement;
-struct NodeBody;
-struct NodeFunction;
-struct NodeVarDecl;
 struct NodeProgram;
+struct NodeFunction;
+struct NodeBody;
+struct NodeStatement;
+struct NodeExpression;
+struct NodeVarDecl;
+struct NodeArithmetic;
+struct NodeReturn;
 
 class Parser {
 public:
@@ -27,12 +31,14 @@ public:
 
 private:
     /* Parsing different abstracted constructs */
+    std::unique_ptr<NodeFunction> parseFunction();
+    std::unique_ptr<NodeBody> parseBody();
+    std::unique_ptr<NodeStatement> parseStatement();
     std::unique_ptr<NodeExpression> parseExpression();
     std::unique_ptr<NodeExpression> parseAssignment();
-    std::unique_ptr<NodeStatement> parseStatement();
-    std::unique_ptr<NodeBody> parseBody();
-    std::unique_ptr<NodeFunction> parseFunction();
-    std::unique_ptr<NodeVarDecl> parseVarDecl(Token type);
+    std::unique_ptr<NodeVarDecl> parseVarDecl(Token type, bool global);
+    int parseArithmetic();
+    std::unique_ptr<NodeReturn> parseReturn();
 
     /* Looking at/consuming previous/current token, should we use ahead for peek? */
     Token peek() const;
@@ -50,7 +56,6 @@ private:
     const std::vector<Token> m_tokens;
     size_t m_idx = 0;
 };
-
 
 
 
@@ -97,7 +102,15 @@ struct NodeAssignmentExpr : NodeExpression {
 
     NodeAssignmentExpr(std::unique_ptr<NodeExpression> l, std::unique_ptr<NodeExpression> r)
         : left(std::move(l)), right(std::move(r)) {}
-}; 
+};
+
+// struct NodeArithmetic : NodeExpression {
+
+// };
+
+struct NodeReturn : NodeExpression {
+
+};
 
 #endif
 
