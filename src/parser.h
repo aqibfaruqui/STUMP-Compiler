@@ -16,7 +16,7 @@ struct NodeProgram;
 struct NodeFunction;
 struct NodeBody;
 struct NodeStatement;
-struct NodeExpression;
+struct NodeAssignment;
 struct NodeVarDecl;
 struct NodeArithmetic;
 struct NodeReturn;
@@ -34,10 +34,9 @@ private:
     std::unique_ptr<NodeFunction> parseFunction();
     std::unique_ptr<NodeBody> parseBody();
     std::unique_ptr<NodeStatement> parseStatement();
-    std::unique_ptr<NodeExpression> parseExpression();
-    std::unique_ptr<NodeExpression> parseAssignment();
+    std::unique_ptr<NodeAssignment> parseAssignment();
     std::unique_ptr<NodeVarDecl> parseVarDecl(Token type, bool global);
-    int parseArithmetic();
+    std::unique_ptr<NodeArithmetic> parseArithmetic();
     std::unique_ptr<NodeReturn> parseReturn();
 
     /* Looking at/consuming previous/current token, should we use ahead for peek? */
@@ -59,19 +58,12 @@ private:
 
 
 
-struct NodeExpression {
-    virtual ~NodeExpression() = default;
+struct NodeProgram {
+    std::vector<std::unique_ptr<NodeFunction>> functions;
+    std::vector<std::unique_ptr<NodeVarDecl>> globals;
 };
 
-struct NodeStatement {
-    virtual ~NodeStatement() = default;
-};
-
-struct NodeBody : NodeStatement {
-    std::vector<std::unique_ptr<NodeStatement>> statements;
-};
-
-struct NodeFunction : NodeStatement {
+struct NodeFunction {
     std::string name;
     std::vector<std::string> parameters;
     std::unique_ptr<NodeBody> body;
@@ -80,36 +72,43 @@ struct NodeFunction : NodeStatement {
         : name(std::move(n)), parameters(std::move(p)), body(std::move(b)) {}
 };
 
+struct NodeBody {
+    std::vector<std::unique_ptr<NodeStatement>> statements;
+};
+
+struct NodeStatement {
+    virtual ~NodeStatement() = default;
+};
+
+struct NodeAssignment : NodeStatement {
+    Token variable;
+    std::unique_ptr<NodeArithmetic> expr;
+    
+    NodeAssignment(Token v, std::unique_ptr<NodeArithmetic> e)
+        : variable(std::move(v)), expr(std::move(e)) {}
+};
+
 struct NodeVarDecl : NodeStatement {
-    TokenType type;
-    std::string name;
-    std::unique_ptr<NodeExpression> expr;
+    Token variable;
+    std::unique_ptr<NodeArithmetic> expr;
     bool global;
 
-    NodeVarDecl(TokenType t, std::string n, std::unique_ptr<NodeExpression> e, bool g = false)
-        : type(std::move(t)), name(std::move(n)), expr(std::move(e)), global(g) {}
+    NodeVarDecl(Token t, std::unique_ptr<NodeArithmetic> e, bool g = false)
+        : variable(std::move(t)), expr(std::move(e)), global(g) {}
 };
 
+struct NodeArithmetic : NodeStatement {
+    Token result;
 
-struct NodeProgram {
-    std::vector<std::unique_ptr<NodeFunction>> functions;
-    std::vector<std::unique_ptr<NodeVarDecl>> globals;
+    NodeArithmetic(Token r)
+        : result(std::move(r)) {}
 };
 
-struct NodeAssignmentExpr : NodeExpression {
-    std::unique_ptr<NodeExpression> left;
-    std::unique_ptr<NodeExpression> right;
+struct NodeReturn : NodeStatement {
+    Token return_value;
 
-    NodeAssignmentExpr(std::unique_ptr<NodeExpression> l, std::unique_ptr<NodeExpression> r)
-        : left(std::move(l)), right(std::move(r)) {}
-};
-
-// struct NodeArithmetic : NodeExpression {
-
-// };
-
-struct NodeReturn : NodeExpression {
-
+    NodeReturn(Token t)
+        : return_value(std::move(t)) {}
 };
 
 #endif

@@ -30,9 +30,9 @@ int main(int argc, char** argv) {
 
     std::cout << "successful lexing, now parsing" << std::endl;
 
-    PARSE
-    Parser parser(std::move(tokens));
-    std::unique_ptr<NodeProgram> program = parser.parse();
+    // PARSE
+    // Parser parser(std::move(tokens));
+    // std::unique_ptr<NodeProgram> program = parser.parse();
 
     std::cout << "success" << std::endl;
 

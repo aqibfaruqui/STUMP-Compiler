@@ -64,56 +64,75 @@ std::unique_ptr<NodeBody> Parser::parseBody() {
 std::unique_ptr<NodeStatement> Parser::parseStatement() {
     auto stmt = std::make_unique<NodeStatement>();
     
+    TokenType t = peek().type;
     while (!check(TokenType::SEMI)) {
-        if (check(TokenType::INT) || check(TokenType::FLOAT)) {
-
-            int result = parseArithmetic();
+        switch (t) {
+        case TokenType::IDENTIFIER: return parseAssignment(); break;
+        case TokenType::INT: 
+        case TokenType::FLOAT:      return parseVarDecl(peek()); break;
+        case TokenType::RETURN:     return parseReturn(); break;
+        // case if/while
+        default: break; // error? invalid statement start
         }
-
-        else if (check(TokenType::RETURN)) {
-            parseReturn();
-        }
-
-
-        // stmt... // parse tokens of one body line
     }
-    return nullptr; // placeholder
-}
-
-// Expression parser
-std::unique_ptr<NodeExpression> Parser::parseExpression() {
-    return parseAssignment(); // placeholder
+    return nullptr; // placeholder for error case
 }
 
 // Assignment parser 
-std::unique_ptr<NodeExpression> Parser::parseAssignment() {
-    auto expr = std::make_unique<NodeExpression>();
-    return expr; // placeholder
+std::unique_ptr<NodeAssignment> Parser::parseAssignment() {
+    /*
+     *  existing var has name consume(TokenType::IDENTIFIER).value.value()
+     *  consume(TokenType::ASSIGN);
+     *  std::unique_ptr<NodeArithmetic> expr = parseArithmetic();
+     * 
+     *  find the existing var?!?!?!?!?!
+     */
+
+    // find var with name 
+    //                ↓
+    consume(TokenType::IDENTIFIER).value.value();
+    consume(TokenType::ASSIGN);
+    std::unique_ptr<NodeArithmetic> expr = parseArithmetic();
+
+    return std::make_unique<NodeAssignment>(variable, expr);
 }
 
 // Variable declaration parser
 std::unique_ptr<NodeVarDecl> Parser::parseVarDecl(Token t, bool global = false) {
-    // parameter makes copy :( MODERNISE
+    /* parameter makes copy :( MODERNISE 
+     * catch error of declaring var with prev declared name
+     */
     consume(t.type);
-    auto name = consume(TokenType::IDENTIFIER).value.value();
 
-    std::unique_ptr<NodeExpression> expr = nullptr;
-    if (checkAdvance(TokenType::ASSIGN)) {
-        expr = parseExpression();
-    }
+    Token variable;
+    variable.type = (t.type == TokenType::INT) ? TokenType::INT_LIT : TokenType::FLOAT_LIT;
+    variable.value = consume(TokenType::IDENTIFIER).value.value();
 
-    consume(TokenType::SEMI);
-    return std::make_unique<NodeVarDecl>(t.type, name, std::move(expr), global);
+    std::unique_ptr<NodeArithmetic> expr = nullptr;
+    if (checkAdvance(TokenType::ASSIGN))
+        expr = parseArithmetic();
+
+    return std::make_unique<NodeVarDecl>(variable, expr, global);
 }
 
 // Arithmetic parser (Shunting-Yard algorithm)
-int Parser::parseArithmetic() {
-    queue<Token> output;    // int/float/iden/func
-    stack<char> operators;
+std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
+    std::queue<Token> output;    // int/float/iden/func
+    std::stack<char> operators;
 
     while (!check(TokenType::SEMI)) {
-        if (check(TokenType::INT) || check)
+        if (check(TokenType::INT)) {
+            continue;
+        }
     }
+
+    consume(TokenType::SEMI);
+    return 0;
+}
+
+std::unique_ptr<NodeReturn> Parser::parseReturn() {
+    consume(TokenType::RETURN);
+    return std::make_unique<NodeReturn>(parseArithmetic()->result); 
 }
 
 // ============================= Token Management =============================

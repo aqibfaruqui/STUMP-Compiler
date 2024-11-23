@@ -1,0 +1,23 @@
+Program -> Global variables
+        -> Functions
+
+Functions -> Statements
+
+Statements -> Declaring variable    {RHS: arithmetic}
+           -> Reassigning variable  {RHS: arithmetic}
+           -> while loop/if statement conditions?
+           -> function calls
+           -> return
+
+Expressions (subpart of a statement)
+
+
+int main() {
+    return 0;
+}
+
+ORG 0;
+BAL main;
+
+main:
+    MOV R6, #0;
