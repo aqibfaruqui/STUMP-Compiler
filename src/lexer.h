@@ -10,11 +10,11 @@ enum class TokenType {
     FUNCTION, WHILE, IF, ELSE, RETURN,
     
     // Types
-    INT, FLOAT,
+    INT, VOID,
     // no function return types so removed BOOL and VOID
     
     // Literals
-    INT_LIT, FLOAT_LIT, IDENTIFIER,
+    INT_LIT, IDENTIFIER,
     // removed TRUE and FALSE
     
     // Operators
