@@ -12,8 +12,8 @@ std::unique_ptr<NodeProgram> Parser::parse() {
     auto program = std::make_unique<NodeProgram>();
 
     while (!atEnd()) {
-        if (check(TokenType::INT) || check(TokenType::FLOAT)) {
-            program->globals.push_back(parseVarDecl(peek(), true));
+        if (check(TokenType::INT)) {
+            program->globals.push_back(parseVarDecl(true));
         }
         program->functions.push_back(parseFunction());
     }
@@ -28,6 +28,7 @@ std::unique_ptr<NodeFunction> Parser::parseFunction() {
     /* function name(... */
     consume(TokenType::FUNCTION);
     auto name = consume(TokenType::IDENTIFIER).value;
+    // if name == 'main'...?
     consume(TokenType::LBRACKET);
 
     /* param1, param2)...*/
@@ -49,15 +50,14 @@ std::unique_ptr<NodeFunction> Parser::parseFunction() {
 
 // Function Body parser
 std::unique_ptr<NodeBody> Parser::parseBody() {
-    auto body = std::make_unique<NodeBody>();
-
+    std::vector<std::unique_ptr<NodeStatement>> statements;
     /* ... stmt1; stmt2; }*/
     while (!check(TokenType::RBRACE)) {
-        body->statements.push_back(parseStatement());
+        statements.push_back(parseStatement());
     }
 
     consume(TokenType::RBRACE);
-    return body;
+    return std::make_unique<NodeBody>(std::move(statements));
 }
 
 // Statement parser (one line of a function body)
@@ -68,8 +68,7 @@ std::unique_ptr<NodeStatement> Parser::parseStatement() {
     while (!check(TokenType::SEMI)) {
         switch (t) {
         case TokenType::IDENTIFIER: return parseAssignment(); break;
-        case TokenType::INT: 
-        case TokenType::FLOAT:      return parseVarDecl(peek()); break;
+        case TokenType::INT:        return parseVarDecl(); break;
         case TokenType::RETURN:     return parseReturn(); break;
         // case if/while
         default: break; // error? invalid statement start
@@ -90,34 +89,31 @@ std::unique_ptr<NodeAssignment> Parser::parseAssignment() {
 
     // find var with name 
     //                ↓
-    consume(TokenType::IDENTIFIER).value.value();
+    std::string name = consume(TokenType::IDENTIFIER).value.value();
     consume(TokenType::ASSIGN);
     std::unique_ptr<NodeArithmetic> expr = parseArithmetic();
 
-    return std::make_unique<NodeAssignment>(variable, expr);
+    return std::make_unique<NodeAssignment>(name, expr);
 }
 
 // Variable declaration parser
-std::unique_ptr<NodeVarDecl> Parser::parseVarDecl(Token t, bool global = false) {
-    /* parameter makes copy :( MODERNISE 
-     * catch error of declaring var with prev declared name
+std::unique_ptr<NodeVarDecl> Parser::parseVarDecl(bool global = false) {
+    /* parameter makes copy -> MODERNISE 
      */
-    consume(t.type);
-
-    Token variable;
-    variable.type = (t.type == TokenType::INT) ? TokenType::INT_LIT : TokenType::FLOAT_LIT;
-    variable.value = consume(TokenType::IDENTIFIER).value.value();
-
+    
+    consume(TokenType::INT);
+    std::string name = consume(TokenType::IDENTIFIER).value.value();
+    // check name not a previously declared variable
     std::unique_ptr<NodeArithmetic> expr = nullptr;
     if (checkAdvance(TokenType::ASSIGN))
         expr = parseArithmetic();
 
-    return std::make_unique<NodeVarDecl>(variable, expr, global);
+    return std::make_unique<NodeVarDecl>(name, expr, global);
 }
 
 // Arithmetic parser (Shunting-Yard algorithm)
 std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
-    std::queue<Token> output;    // int/float/iden/func
+    std::queue<Token> output;    // int/iden/func
     std::stack<char> operators;
 
     while (!check(TokenType::SEMI)) {
@@ -145,7 +141,6 @@ Token Parser::consume(TokenType type) {
     if (check(type)) return advance();
     throw error(peek());
 }
-
 
 Token Parser::advance() {
     if (!atEnd()) return m_tokens.at(m_idx++);

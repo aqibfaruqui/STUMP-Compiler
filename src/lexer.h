@@ -11,11 +11,9 @@ enum class TokenType {
     
     // Types
     INT, VOID,
-    // no function return types so removed BOOL and VOID
     
     // Literals
     INT_LIT, IDENTIFIER,
-    // removed TRUE and FALSE
     
     // Operators
     PLUS, MINUS, MULTIPLY, DIVIDE, 
@@ -25,7 +23,6 @@ enum class TokenType {
 
     // Bit operations
     BIT_AND, BIT_OR, BIT_XOR, BIT_NOT,
-    SHIFT_ASR, SHIFT_ROR, SHIFT_RRC,
     
     // Symbols
     LBRACKET, RBRACKET, LBRACE, RBRACE, 

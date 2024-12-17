@@ -26,7 +26,7 @@ std::vector<Token> Lexer::tokenise() {
             }
         }
             
-        /* INT_LIT & FLOAT_LIT */
+        /* INT_LIT */
         else if (std::isdigit(peek().value())) {
             buffer.push_back(consume());
             while (peek().has_value() && std::isdigit(peek().value())) {
@@ -55,7 +55,6 @@ std::vector<Token> Lexer::tokenise() {
                 {"else", TokenType::ELSE},
                 {"function", TokenType::FUNCTION},
                 {"int", TokenType::INT},
-                {"float", TokenType::FLOAT},
                 {"setLED", TokenType::SET_LED},
                 {"clearLED", TokenType::CLEAR_LED},
                 {"setCursor", TokenType::SET_CURSOR},
@@ -64,10 +63,7 @@ std::vector<Token> Lexer::tokenise() {
                 {"waitKey", TokenType::WAIT_KEY},
                 {"playSound", TokenType::PLAY_SOUND},
                 {"stopSound", TokenType::STOP_SOUND},
-                {"delay", TokenType::DELAY},
-                {"asr", TokenType::SHIFT_ASR},
-                {"ror", TokenType::SHIFT_ROR},
-                {"rrc", TokenType::SHIFT_RRC}
+                {"delay", TokenType::DELAY}
             };
 
             auto text_token = text_tokens.find(buffer);

@@ -35,7 +35,7 @@ private:
     std::unique_ptr<NodeBody> parseBody();
     std::unique_ptr<NodeStatement> parseStatement();
     std::unique_ptr<NodeAssignment> parseAssignment();
-    std::unique_ptr<NodeVarDecl> parseVarDecl(Token type, bool global);
+    std::unique_ptr<NodeVarDecl> parseVarDecl(bool global);
     std::unique_ptr<NodeArithmetic> parseArithmetic();
     std::unique_ptr<NodeReturn> parseReturn();
 
@@ -81,20 +81,20 @@ struct NodeStatement {
 };
 
 struct NodeAssignment : NodeStatement {
-    Token variable;
+    std::string name;
     std::unique_ptr<NodeArithmetic> expr;
     
-    NodeAssignment(Token v, std::unique_ptr<NodeArithmetic> e)
-        : variable(std::move(v)), expr(std::move(e)) {}
+    NodeAssignment(std::string n, std::unique_ptr<NodeArithmetic> e)
+        : name(n), expr(std::move(e)) {}
 };
 
 struct NodeVarDecl : NodeStatement {
-    Token variable;
+    std::string name;
     std::unique_ptr<NodeArithmetic> expr;
     bool global;
 
-    NodeVarDecl(Token t, std::unique_ptr<NodeArithmetic> e, bool g = false)
-        : variable(std::move(t)), expr(std::move(e)), global(g) {}
+    NodeVarDecl(std::string n, std::unique_ptr<NodeArithmetic> e, bool g = false)
+        : name(n), expr(std::move(e)), global(g) {}
 };
 
 struct NodeArithmetic : NodeStatement {
