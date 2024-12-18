@@ -1,23 +1,28 @@
 Program -> Global variables
         -> Functions
 
-Functions -> Statements
+Functions -> Name + Parameters
+          -> Body
 
-Statements -> Declaring variable    {RHS: arithmetic}
-           -> Reassigning variable  {RHS: arithmetic}
+Body -> Statements
+
+Statements -> Declaring variable  {RHS: arithmetic}
+           -> Assigning variable  {RHS: arithmetic}
            -> while loop/if statement conditions?
-           -> function calls
            -> return
 
-Expressions (subpart of a statement)
+                    -> Expressions
 
+Expressions -> Integers
+            -> Function calls
+            -> arithmetic
 
-int main() {
-    return 0;
-}
-
-ORG 0;
-BAL main;
-
-main:
-    MOV R6, #0;
+e.g. return 6 - (2 + y) * x - cube(y);
+parseArithmetic() plan
+1. Parse RHS of statement and return NodeArithmetic
+    a. Where NodeArithmetic contains vector of Tokens in RPN order
+    b. Functions and integers treated the same
+2. Generator sees NodeArithmetic
+    a. Access RPN vector of tokens
+    b. Push to stack until operator
+    c. 

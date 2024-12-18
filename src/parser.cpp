@@ -95,14 +95,47 @@ std::unique_ptr<NodeVarDecl> Parser::parseVarDecl(bool global = false) {
     return std::make_unique<NodeVarDecl>(name, expr, global);
 }
 
-// Arithmetic parser (Shunting-Yard algorithm)
+// Arithmetic parser (Shunting-Yard algorithm: Infix -> Reverse Polish)
 std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
-    std::queue<Token> output;    // int/iden/func
+    std::vector<std::unique_ptr<NodeExpression>> output;
     std::stack<char> operators;
 
     while (!check(TokenType::SEMI)) {
-        if (check(TokenType::INT_LIT)) {
-            continue;
+        TokenType t = peek().type;
+        switch (t) {
+            case TokenType::INT_LIT: 
+                output.push_back(std::make_unique<NodeInteger>(advance())); 
+                break;
+            case TokenType::IDENTIFIER: 
+                {
+                Token value = advance();
+                if (check(TokenType::LBRACKET)) {
+                    std::vector<Token> inputs;
+                    do {
+                        if (!(check(TokenType::INT_LIT) || check(TokenType::IDENTIFIER))) {
+                            std::cerr << "invalid function parameter types" << std::endl;
+                            exit(EXIT_FAILURE);
+                        }
+                        inputs.push_back(advance());
+                    } while (checkAdvance(TokenType::COMMA));
+                    consume(TokenType::RBRACKET);
+                    output.push_back(std::make_unique<NodeFunctionCall>(value, inputs));
+                } else {
+                    output.push_back(std::make_unique<NodeIdentifier>(value));
+                } break;
+                }
+
+            case TokenType::PLUS:
+            case TokenType::MINUS:
+            case TokenType::MULTIPLY:
+            case TokenType::DIVIDE:
+                while (!operators.empty()) {
+                    /*
+                     * 
+                     *
+                     * 
+                     */
+                }
         }
     }
 
@@ -112,7 +145,7 @@ std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
 
 std::unique_ptr<NodeReturn> Parser::parseReturn() {
     consume(TokenType::RETURN);
-    return std::make_unique<NodeReturn>(parseArithmetic()->result); 
+    return std::make_unique<NodeReturn>(parseArithmetic());
 }
 
 // ============================= Arithmetic Helper Methods =============================

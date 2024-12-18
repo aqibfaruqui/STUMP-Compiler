@@ -1,0 +1,15 @@
+function cube(num) {
+    return num * num * num;
+}
+
+function main() {
+    int x = 4;
+    int y = 5;
+    return 6 - (2 + y) * x - cube(y);
+}
+
+
+
+
+int y = 3 + 8;
+NodeVarDecl

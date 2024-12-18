@@ -20,6 +20,11 @@ struct NodeAssignment;
 struct NodeVarDecl;
 struct NodeArithmetic;
 struct NodeReturn;
+struct NodeExpression;
+struct NodeInteger;
+struct NodeIdentifier;
+struct NodeOperator;
+struct NodeFunctionCall;
 
 class Parser {
 public:
@@ -43,7 +48,7 @@ private:
     bool isOperator(TokenType type);
     char getOperator(TokenType op);
     int Parser::getPrecedence(char op);
-    
+
     /* Looking at/consuming previous/current token, should we use ahead for peek? */
     Token peek() const;
     Token consume(TokenType type);
@@ -61,8 +66,9 @@ private:
     size_t m_idx = 0;
 };
 
-
-
+/* Layers of abstract syntax tree
+ * ---> Program -> Function -> Body -> Statement -> Expression
+ */
 struct NodeProgram {
     std::vector<std::unique_ptr<NodeFunction>> functions;
     std::vector<std::unique_ptr<NodeVarDecl>> globals;
@@ -81,40 +87,76 @@ struct NodeBody {
     std::vector<std::unique_ptr<NodeStatement>> statements;
 };
 
+//---> Statement ∈ {Assignment, VarDecl, Return}
 struct NodeStatement {
     virtual ~NodeStatement() = default;
 };
 
 struct NodeAssignment : NodeStatement {
     std::string name;
-    std::unique_ptr<NodeArithmetic> expr;
+    std::unique_ptr<NodeArithmetic> rpn;
     
-    NodeAssignment(std::string n, std::unique_ptr<NodeArithmetic> e)
-        : name(n), expr(std::move(e)) {}
+    NodeAssignment(std::string n, std::unique_ptr<NodeArithmetic> r)
+        : name(n), rpn(std::move(r)) {}
 };
 
 struct NodeVarDecl : NodeStatement {
     std::string name;
-    std::unique_ptr<NodeArithmetic> expr;
+    std::unique_ptr<NodeArithmetic> rpn;
     bool global;
 
-    NodeVarDecl(std::string n, std::unique_ptr<NodeArithmetic> e, bool g = false)
-        : name(n), expr(std::move(e)), global(g) {}
+    NodeVarDecl(std::string n, std::unique_ptr<NodeArithmetic> r, bool g = false)
+        : name(n), rpn(std::move(r)), global(g) {}
 };
 
 struct NodeArithmetic : NodeStatement {
-    Token result;
+    std::vector<std::unique_ptr<NodeExpression>> reversepolish;
 
-    NodeArithmetic(Token r)
-        : result(std::move(r)) {}
+    NodeArithmetic(std::vector<std::unique_ptr<NodeExpression>> rpn)
+        : reversepolish(std::move(rpn)) {}
 };
 
 struct NodeReturn : NodeStatement {
-    Token return_value;
+    std::unique_ptr<NodeArithmetic> rpn;
 
-    NodeReturn(Token t)
-        : return_value(std::move(t)) {}
+    NodeReturn(std::unique_ptr<NodeArithmetic> r)
+        : rpn(std::move(r)) {}
 };
+
+//---> Expression ∈ {Integer, Arithmetic, FunctionCall}
+struct NodeExpression {
+    virtual ~NodeExpression() = default;
+};
+
+struct NodeInteger : NodeExpression {
+    Token value;
+
+    NodeInteger(Token v)
+        : value(std::move(v)) {}
+};
+
+struct NodeIdentifier : NodeExpression {
+    Token value;
+
+    NodeIdentifier(Token v)
+        : value(std::move(v)) {}
+};
+
+struct NodeOperator : NodeExpression {
+    Token value;
+
+    NodeOperator(Token v)
+        : value(std::move(v)) {}
+};
+
+struct NodeFunctionCall : NodeExpression {
+    Token value;
+    std::vector<Token> inputs; // int_lit or identifier
+
+    NodeFunctionCall(Token v, std::vector<Token> i)
+        : value(std::move(v)), inputs(std::move(i)) {}
+};
+
 
 #endif
 
