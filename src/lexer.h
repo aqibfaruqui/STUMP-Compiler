@@ -47,7 +47,7 @@ struct Token {
 class Lexer {
 public:
     /* Constructor */
-    explicit Lexer(const std::string& src);
+    explicit Lexer(std::string& src);
     
     /* Converting input file to vector of tokens */
     std::vector<Token> tokenise();

@@ -7,7 +7,7 @@
 #include "lexer.h"
 
 
-Lexer::Lexer(const std::string& src) 
+Lexer::Lexer(std::string& src) 
     : m_src(std::move(src)), m_idx(0) {}
 
 std::vector<Token> Lexer::tokenise() {

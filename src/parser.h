@@ -24,9 +24,9 @@ struct NodeReturn;
 class Parser {
 public:
     /* Constructor */
-    explicit Parser(const std::vector<Token>& tokens);
+    explicit Parser(std::vector<Token>& tokens);
 
-    /* Parsing input tokens */
+    /* Parsing input tokens from lexer */
     std::unique_ptr<NodeProgram> parse();
 
 private:
@@ -39,6 +39,11 @@ private:
     std::unique_ptr<NodeArithmetic> parseArithmetic();
     std::unique_ptr<NodeReturn> parseReturn();
 
+    /* Arithmetic Helper methods */
+    bool isOperator(TokenType type);
+    char getOperator(TokenType op);
+    int Parser::getPrecedence(char op);
+    
     /* Looking at/consuming previous/current token, should we use ahead for peek? */
     Token peek() const;
     Token consume(TokenType type);

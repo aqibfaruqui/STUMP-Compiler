@@ -1,9 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <vector>
-#include "lexer.h"
-#include "parser.h"
+#include "generator.h"
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -12,7 +9,7 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    /* Reading whole input file into string */
+    /* Reading input file into string */
     std::string contents;
     {
         std::stringstream contents_stream;
@@ -21,20 +18,30 @@ int main(int argc, char** argv) {
         contents = contents_stream.str();
     }
 
-
     std::cout << "starting" << std::endl;
 
-    // TOKENISE
-    Lexer lexer(std::move(contents));
-    std::vector<Token> tokens = lexer.tokenise();
+    //---> TOKENISE
+    // Lexer lexer(contents);
+    // std::vector<Token> tokens = lexer.tokenise();
 
     std::cout << "successful lexing, now parsing" << std::endl;
 
-    // PARSE
-    // Parser parser(std::move(tokens));
+    //---> PARSE
+    // Parser parser(tokens);
     // std::unique_ptr<NodeProgram> program = parser.parse();
 
-    std::cout << "success" << std::endl;
+    std::cout << "successful parsing, now generating" << std::endl;
 
+    //---> GENERATE
+    std::unique_ptr<NodeProgram> program;
+    Generator generator(std::move(program));
+    std::string output = generator.generate();
+
+    std::cout << "code generated" << std::endl;
+
+    /* Writing string into output file */
+    std::ofstream out("../samples/output.s");
+    out << output;
+    
     return EXIT_SUCCESS;
 }
