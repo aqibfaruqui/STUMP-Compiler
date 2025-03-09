@@ -1,3 +1,16 @@
+/* function main() {
+    int x = 4;
+    int y = 5;
+    int z = x + y;
+    return z;
+   } 
+
+    - program->functions has one function, main
+    - after init stack, call generateMain() -> init registers and checks main exists 
+    - call generateFunction() for func : functions
+    - ...
+*/
+
 #include "generator.h"
 
 Generator::Generator(std::unique_ptr<NodeProgram> program)
@@ -5,13 +18,42 @@ Generator::Generator(std::unique_ptr<NodeProgram> program)
 
 std::string Generator::generate() {
     m_output << "ORG 0\n";
-    m_output << "B main\n\n";
-    m_output << "main:\n";
-    m_output << "    LD R6, [PC, #1]\n";
-    m_output << "    ADD R6, R6, #1\n";
-    m_output << "    DEFW 0x1000\n";
-
-    
-
+    m_output << "B main\n";
+    m_output << "SP     EQU     R6\n";
+    m_output << "stack  DATA    0x1200\n\n";
+    generateMain();
+    for (auto& func : m_program->functions) {
+        generateFunction(std::make_unique<NodeFunction>(func));
+    }
     return m_output.str();
+}
+
+void Generator::generateMain() {
+    bool foundmain = false;
+    std::unique_ptr<NodeFunction> main;
+    for (auto& func : m_program->functions) {
+        if (func->name == "main") {
+            foundmain = true;
+            main = std::make_unique<NodeFunction>(func);
+            break;
+        }        
+    }
+    if (!foundmain) {
+        std::cerr << "no main function" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    m_output << "main:\n";
+    m_output << "MOV R1, #0\n";
+    m_output << "MOV R2, #0\n";
+    m_output << "MOV R3, #0\n";
+    m_output << "MOV R4, #0\n";
+    m_output << "MOV R5, #0\n";
+    m_output << "LD SP, [R0, #stack]\n";
+
+    return;
+}
+
+void Generator::generateFunction(std::unique_ptr<NodeFunction> function) {
+    return;
 }

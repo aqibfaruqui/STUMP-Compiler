@@ -20,20 +20,19 @@ int main(int argc, char** argv) {
 
     std::cout << "starting" << std::endl;
 
-    //---> TOKENISE
-    // Lexer lexer(contents);
-    // std::vector<Token> tokens = lexer.tokenise();
+    //---> 1. TOKENISE
+    Lexer lexer(contents);
+    std::vector<Token> tokens = lexer.tokenise();
 
     std::cout << "successful lexing, now parsing" << std::endl;
 
-    //---> PARSE
-    // Parser parser(tokens);
-    // std::unique_ptr<NodeProgram> program = parser.parse();
+    //---> 2. PARSE
+    Parser parser(tokens);
+    std::unique_ptr<NodeProgram> program = parser.parse();
 
     std::cout << "successful parsing, now generating" << std::endl;
 
-    //---> GENERATE
-    std::unique_ptr<NodeProgram> program;
+    //---> 3. GENERATE
     Generator generator(std::move(program));
     std::string output = generator.generate();
 

@@ -95,53 +95,72 @@ std::unique_ptr<NodeVarDecl> Parser::parseVarDecl(bool global = false) {
     return std::make_unique<NodeVarDecl>(name, expr, global);
 }
 
-// Arithmetic parser (Shunting-Yard algorithm: Infix -> Reverse Polish)
+/* dummy parseArithmetic for:
+ *  int x = 1;
+ *  int y = 2;
+ *  int z = x + y;   
+ */ 
 std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
     std::vector<std::unique_ptr<NodeExpression>> output;
-    std::stack<char> operators;
-
-    while (!check(TokenType::SEMI)) {
-        TokenType t = peek().type;
-        switch (t) {
-            case TokenType::INT_LIT: 
-                output.push_back(std::make_unique<NodeInteger>(advance())); 
-                break;
-            case TokenType::IDENTIFIER: 
-                {
-                Token value = advance();
-                if (check(TokenType::LBRACKET)) {
-                    std::vector<Token> inputs;
-                    do {
-                        if (!(check(TokenType::INT_LIT) || check(TokenType::IDENTIFIER))) {
-                            std::cerr << "invalid function parameter types" << std::endl;
-                            exit(EXIT_FAILURE);
-                        }
-                        inputs.push_back(advance());
-                    } while (checkAdvance(TokenType::COMMA));
-                    consume(TokenType::RBRACKET);
-                    output.push_back(std::make_unique<NodeFunctionCall>(value, inputs));
-                } else {
-                    output.push_back(std::make_unique<NodeIdentifier>(value));
-                } break;
-                }
-
-            case TokenType::PLUS:
-            case TokenType::MINUS:
-            case TokenType::MULTIPLY:
-            case TokenType::DIVIDE:
-                while (!operators.empty()) {
-                    /*
-                     * 
-                     *
-                     * 
-                     */
-                }
-        }
+    if (check(TokenType::INT_LIT)) {
+        output.push_back(std::make_unique<NodeInteger>(consume((TokenType::INT_LIT))));
+    } else {
+        output.push_back(std::make_unique<NodeIdentifier>(consume((TokenType::IDENTIFIER))));
+        output.push_back(std::make_unique<NodeOperator>(consume((TokenType::PLUS))));
+        output.push_back(std::make_unique<NodeIdentifier>(consume((TokenType::IDENTIFIER))));
     }
-
-    consume(TokenType::SEMI);
-    return 0;
+    
+    consume(TokenType::SEMI);    
+    return std::make_unique<NodeArithmetic>(output);
 }
+
+// Arithmetic parser (Shunting-Yard algorithm: Infix -> Reverse Polish)
+// std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
+//     std::vector<std::unique_ptr<NodeExpression>> output;
+//     std::stack<char> operators;
+
+//     while (!check(TokenType::SEMI)) {
+//         TokenType t = peek().type;
+//         switch (t) {
+//             case TokenType::INT_LIT: 
+//                 output.push_back(std::make_unique<NodeInteger>(advance())); 
+//                 break;
+//             case TokenType::IDENTIFIER: 
+//                 {
+//                 Token value = advance();
+//                 if (check(TokenType::LBRACKET)) {
+//                     std::vector<Token> inputs;
+//                     do {
+//                         if (!(check(TokenType::INT_LIT) || check(TokenType::IDENTIFIER))) {
+//                             std::cerr << "invalid function parameter types" << std::endl;
+//                             exit(EXIT_FAILURE);
+//                         }
+//                         inputs.push_back(advance());
+//                     } while (checkAdvance(TokenType::COMMA));
+//                     consume(TokenType::RBRACKET);
+//                     output.push_back(std::make_unique<NodeFunctionCall>(value, inputs));
+//                 } else {
+//                     output.push_back(std::make_unique<NodeIdentifier>(value));
+//                 } break;
+//                 }
+
+//             case TokenType::PLUS:
+//             case TokenType::MINUS:
+//             case TokenType::MULTIPLY:
+//             case TokenType::DIVIDE:
+//                 while (!operators.empty()) {
+//                     /*
+//                      * 
+//                      *
+//                      * 
+//                      */
+//                 }
+//         }
+//     }
+
+//     consume(TokenType::SEMI);
+//     return 0;
+// }
 
 std::unique_ptr<NodeReturn> Parser::parseReturn() {
     consume(TokenType::RETURN);

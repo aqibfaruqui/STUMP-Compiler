@@ -13,10 +13,12 @@ public:
     std::string generate();
 
 private:
-    void generateFunction();
+    void generateMain();
+    void generateFunction(std::unique_ptr<NodeFunction>);
     void generateBody();
 
     const std::unique_ptr<NodeProgram> m_program;
+    size_t m_linenumber;
     std::stringstream m_output;
 };
 

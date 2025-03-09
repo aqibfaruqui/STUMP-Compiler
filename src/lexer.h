@@ -10,7 +10,7 @@ enum class TokenType {
     FUNCTION, WHILE, IF, ELSE, RETURN,
     
     // Types
-    INT, VOID,
+    INT,
     
     // Literals
     INT_LIT, IDENTIFIER,
