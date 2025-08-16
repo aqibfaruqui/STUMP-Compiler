@@ -47,7 +47,7 @@ private:
     /* Arithmetic Helper methods */
     bool isOperator(TokenType type);
     char getOperator(TokenType op);
-    int Parser::getPrecedence(char op);
+    int getPrecedence(char op);
 
     /* Looking at/consuming previous/current token, should we use ahead for peek? */
     Token peek() const;
@@ -85,6 +85,9 @@ struct NodeFunction {
 
 struct NodeBody {
     std::vector<std::unique_ptr<NodeStatement>> statements;
+    
+    NodeBody(std::vector<std::unique_ptr<NodeStatement>> stmts)
+        : statements(std::move(stmts)) {}
 };
 
 //---> Statement ∈ {Assignment, VarDecl, Return}

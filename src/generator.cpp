@@ -33,28 +33,6 @@ std::string Generator::generate() {
     m_output << "B main\n";
     m_output << "SP     EQU     R6\n";
     m_output << "stack  DATA    0x1200\n\n";
-    generateMain();
-    for (auto& func : m_program->functions) {
-        generateFunction(std::make_unique<NodeFunction>(func));
-    }
-    return m_output.str();
-}
-
-void Generator::generateMain() {
-    bool foundmain = false;
-    std::unique_ptr<NodeFunction> main;
-    for (auto& func : m_program->functions) {
-        if (func->name == "main") {
-            foundmain = true;
-            main = std::make_unique<NodeFunction>(func);
-            break;
-        }        
-    }
-    if (!foundmain) {
-        std::cerr << "no main function" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
     m_output << "main:\n";
     m_output << "MOV R1, #0\n";
     m_output << "MOV R2, #0\n";
@@ -62,18 +40,5 @@ void Generator::generateMain() {
     m_output << "MOV R4, #0\n";
     m_output << "MOV R5, #0\n";
     m_output << "LD SP, [R0, #stack]\n";
-
-    // func->name           ; ignore for main
-    // func->parameters     ; ignore for main
-    // func->body           ; generateBody()? body->statements
-
-    // for (auto& stmt : main->body) {
-    //     continue;
-    // }
-
-    return;
-}
-
-void Generator::generateFunction(std::unique_ptr<NodeFunction> function) {
-    return;
+    return m_output.str();
 }

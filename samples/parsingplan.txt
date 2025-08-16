@@ -26,3 +26,38 @@ parseArithmetic() plan
     a. Access RPN vector of tokens
     b. Push to stack until operator
     c. 
+
+
+ORG 0
+B main
+SP      EQU     R6
+stack   DATA    0x1200
+
+main:
+MOV R1, #0
+MOV R2, #0
+MOV R3, #0
+MOV R4, #0
+MOV R5, #0
+LD SP, [R0, #stack]
+
+; int x = 4
+LD R1, [PC, #1]
+ADD PC, PC, #1
+DEFW 4
+
+ST R1, [SP]             ; push x
+ADD R6, R6, #1
+
+; int y = 5
+LD R1, [PC, #1]
+ADD PC, PC, #1
+DEFW 5
+
+ST R1, [SP]             ; push y
+ADD R6, R6, #1
+
+; int z = x + y     ->      RPN: int z = x y +
+LD R1, [SP, #-1]
+LD R2, [SP, #-2]
+ADD R1, R1, R2

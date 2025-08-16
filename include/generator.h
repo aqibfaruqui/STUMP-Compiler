@@ -13,9 +13,7 @@ public:
     std::string generate();
 
 private:
-    void generateMain();
-    void generateFunction(std::unique_ptr<NodeFunction>);
-    void generateBody();
+    // TODO: Add generation methods
 
     const std::unique_ptr<NodeProgram> m_program;
     size_t m_linenumber;

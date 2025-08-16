@@ -66,7 +66,7 @@ std::unique_ptr<NodeStatement> Parser::parseStatement() {
     while (!check(TokenType::SEMI)) {
         switch (t) {
         case TokenType::IDENTIFIER: return parseAssignment(); break;
-        case TokenType::INT:        return parseVarDecl(); break;
+        case TokenType::INT:        return parseVarDecl(false); break;
         case TokenType::RETURN:     return parseReturn(); break;
         // case if/while
         // case FPGA peripherals (make libraries to include?!)
@@ -82,7 +82,7 @@ std::unique_ptr<NodeAssignment> Parser::parseAssignment() {
     consume(TokenType::ASSIGN);
     std::unique_ptr<NodeArithmetic> expr = parseArithmetic();
 
-    return std::make_unique<NodeAssignment>(name, expr);
+    return std::make_unique<NodeAssignment>(name, std::move(expr));
 }
 
 // Variable declaration parser
@@ -92,75 +92,57 @@ std::unique_ptr<NodeVarDecl> Parser::parseVarDecl(bool global = false) {
     consume(TokenType::ASSIGN);
     std::unique_ptr<NodeArithmetic> expr = parseArithmetic();
 
-    return std::make_unique<NodeVarDecl>(name, expr, global);
-}
-
-/* dummy parseArithmetic for:
- *  int x = 1;
- *  int y = 2;
- *  int z = x + y;   
- */ 
-std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
-    std::vector<std::unique_ptr<NodeExpression>> output;
-    if (check(TokenType::INT_LIT)) {
-        output.push_back(std::make_unique<NodeInteger>(consume((TokenType::INT_LIT))));
-    } else {
-        output.push_back(std::make_unique<NodeIdentifier>(consume((TokenType::IDENTIFIER))));
-        output.push_back(std::make_unique<NodeOperator>(consume((TokenType::PLUS))));
-        output.push_back(std::make_unique<NodeIdentifier>(consume((TokenType::IDENTIFIER))));
-    }
-    
-    consume(TokenType::SEMI);    
-    return std::make_unique<NodeArithmetic>(output);
+    return std::make_unique<NodeVarDecl>(name, std::move(expr), global);
 }
 
 // Arithmetic parser (Shunting-Yard algorithm: Infix -> Reverse Polish)
-// std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
-//     std::vector<std::unique_ptr<NodeExpression>> output;
-//     std::stack<char> operators;
+std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
+    std::vector<std::unique_ptr<NodeExpression>> output;
+    std::stack<TokenType> operators;
 
-//     while (!check(TokenType::SEMI)) {
-//         TokenType t = peek().type;
-//         switch (t) {
-//             case TokenType::INT_LIT: 
-//                 output.push_back(std::make_unique<NodeInteger>(advance())); 
-//                 break;
-//             case TokenType::IDENTIFIER: 
-//                 {
-//                 Token value = advance();
-//                 if (check(TokenType::LBRACKET)) {
-//                     std::vector<Token> inputs;
-//                     do {
-//                         if (!(check(TokenType::INT_LIT) || check(TokenType::IDENTIFIER))) {
-//                             std::cerr << "invalid function parameter types" << std::endl;
-//                             exit(EXIT_FAILURE);
-//                         }
-//                         inputs.push_back(advance());
-//                     } while (checkAdvance(TokenType::COMMA));
-//                     consume(TokenType::RBRACKET);
-//                     output.push_back(std::make_unique<NodeFunctionCall>(value, inputs));
-//                 } else {
-//                     output.push_back(std::make_unique<NodeIdentifier>(value));
-//                 } break;
-//                 }
+    while (!check(TokenType::SEMI)) {
+        TokenType t = peek().type;
+        
+        if (t == TokenType::INT_LIT) {
+            output.push_back(std::make_unique<NodeInteger>(advance()));
+        }
+        else if (t == TokenType::IDENTIFIER) {
+            output.push_back(std::make_unique<NodeIdentifier>(advance()));
+        }
+        else if (isOperator(t)) {
+            while (!operators.empty() && isOperator(operators.top()) &&
+                   getPrecedence(getOperator(operators.top())) >= getPrecedence(getOperator(t))) {
+                output.push_back(std::make_unique<NodeOperator>(Token{operators.top()}));
+                operators.pop();
+            }
+            operators.push(t);
+            advance();
+        }
+        else if (t == TokenType::LBRACKET) {
+            operators.push(t);
+            advance();
+        }
+        else if (t == TokenType::RBRACKET) {
+            while (!operators.empty() && operators.top() != TokenType::LBRACKET) {
+                output.push_back(std::make_unique<NodeOperator>(Token{operators.top()}));
+                operators.pop();
+            }
+            if (!operators.empty()) operators.pop();
+            advance();
+        }
+        else {
+            break;
+        }
+    }
 
-//             case TokenType::PLUS:
-//             case TokenType::MINUS:
-//             case TokenType::MULTIPLY:
-//             case TokenType::DIVIDE:
-//                 while (!operators.empty()) {
-//                     /*
-//                      * 
-//                      *
-//                      * 
-//                      */
-//                 }
-//         }
-//     }
+    while (!operators.empty()) {
+        output.push_back(std::make_unique<NodeOperator>(Token{operators.top()}));
+        operators.pop();
+    }
 
-//     consume(TokenType::SEMI);
-//     return 0;
-// }
+    consume(TokenType::SEMI);
+    return std::make_unique<NodeArithmetic>(std::move(output));
+}
 
 std::unique_ptr<NodeReturn> Parser::parseReturn() {
     consume(TokenType::RETURN);
@@ -182,7 +164,7 @@ char Parser::getOperator(TokenType op) {
         case TokenType::MINUS: return '-';
         case TokenType::MULTIPLY: return '*';
         case TokenType::DIVIDE: return '/';
-        default: break;
+        default: return '\0';
     }
 }
 

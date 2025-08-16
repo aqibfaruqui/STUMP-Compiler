@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include "lexer.h"
+#include "parser.h"
 #include "generator.h"
 
 int main(int argc, char** argv) {
@@ -39,7 +41,7 @@ int main(int argc, char** argv) {
     std::cout << "code generated" << std::endl;
 
     /* Writing string into output file */
-    std::ofstream out("../samples/output.s");
+    std::ofstream out("output/output.s");
     out << output;
     
     return EXIT_SUCCESS;
