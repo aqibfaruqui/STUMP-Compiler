@@ -1,6 +1,5 @@
-function main() {
+fn main() -> int effects [] {
     int x = 4;
-    int y = 5;
-    int z = x + y;
-    return z;
+    bool y = true;
+    return x;
 }

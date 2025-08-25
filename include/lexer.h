@@ -10,10 +10,10 @@ enum class TokenType {
     FUNCTION, WHILE, IF, ELSE, RETURN,
     
     // Types
-    INT,
+    INT, BOOL,
     
     // Literals
-    INT_LIT, IDENTIFIER,
+    INT_LIT, TRUE, FALSE, IDENTIFIER,
     
     // Operators
     PLUS, MINUS, MULTIPLY, DIVIDE, 
@@ -25,15 +25,13 @@ enum class TokenType {
     BIT_AND, BIT_OR, BIT_XOR, BIT_NOT,
     
     // Symbols
-    LBRACKET, RBRACKET, LBRACE, RBRACE, 
-    SEMI, COMMA,
+    LBRACKET, RBRACKET,
+    LBRACE, RBRACE,
+    LSQUARE, RSQUARE,
+    SEMI, COMMA, DOT, ARROW,
 
-    // FPGA Keywords
-    SET_LED, CLEAR_LED,
-    SET_CURSOR, PRINT_LCD,
-    READ_KEY, WAIT_KEY,  
-    PLAY_SOUND, STOP_SOUND,
-    DELAY,                  
+    // STUMP Keywords
+    EFFECTS,
     
     // Special
     END_OF_FILE, INVALID

@@ -53,17 +53,12 @@ std::vector<Token> Lexer::tokenise() {
                 {"if", TokenType::IF},
                 {"while", TokenType::WHILE},
                 {"else", TokenType::ELSE},
-                {"function", TokenType::FUNCTION},
+                {"fn", TokenType::FUNCTION},
                 {"int", TokenType::INT},
-                {"setLED", TokenType::SET_LED},
-                {"clearLED", TokenType::CLEAR_LED},
-                {"setCursor", TokenType::SET_CURSOR},
-                {"printLCD", TokenType::PRINT_LCD},
-                {"readKey", TokenType::READ_KEY},
-                {"waitKey", TokenType::WAIT_KEY},
-                {"playSound", TokenType::PLAY_SOUND},
-                {"stopSound", TokenType::STOP_SOUND},
-                {"delay", TokenType::DELAY}
+                {"bool", TokenType::BOOL},
+                {"true", TokenType::TRUE},
+                {"false", TokenType::FALSE},
+                {"effects", TokenType::EFFECTS}
             };
 
             auto text_token = text_tokens.find(buffer);
@@ -85,8 +80,18 @@ std::vector<Token> Lexer::tokenise() {
                 case '{': tokens.push_back({.type = TokenType::LBRACE}); break;
                 case '}': tokens.push_back({.type = TokenType::RBRACE}); break;
                 case ',': tokens.push_back({.type = TokenType::COMMA}); break;
+                case '[': tokens.push_back({.type = TokenType::LSQUARE}); break;
+                case ']': tokens.push_back({.type = TokenType::RSQUARE}); break;
+                case '.': tokens.push_back({.type = TokenType::DOT}); break;
                 case '+': tokens.push_back({.type = TokenType::PLUS}); break;
-                case '-': tokens.push_back({.type = TokenType::MINUS}); break;
+                case '-':
+                    if (peek(1).has_value() && peek(1).value() == '>') {
+                        consume();
+                        tokens.push_back({.type = TokenType::ARROW});
+                    } else {
+                        tokens.push_back({.type = TokenType::MINUS});
+                    }
+                    break;
                 case '*': tokens.push_back({.type = TokenType::MULTIPLY}); break;
                 case '/': tokens.push_back({.type = TokenType::DIVIDE}); break;
                 case '&': tokens.push_back({.type = TokenType::BIT_AND}); break;
