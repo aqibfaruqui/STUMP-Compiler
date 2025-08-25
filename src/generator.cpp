@@ -1,44 +1,84 @@
-/* function main() {
-    int x = 4;
-    int y = 5;
-    int z = x + y;
-    return z;
-   } 
-
-    - program->functions has one function, main
-    - after init stack, call generateMain() -> init registers and checks main exists 
-    - call generateFunction() for func : functions
-    - ...
-
-    known problems:
-        - if we generate main first, function calls from main must write missing function addresses to PC
-        - problem persists for any function that calls others
-        - therefore, pseudo topologically sorting our functions could let us write functions in order of calling
-            - problem of circular function calling? may be 'correct' if calls depend on conditional statements
-
-        - otherwise, let generator write functions with memory address left blank and let a second pass through fill them in
-            - how to edit std::stringstream on second pass through??
-
-        +++ treat like C, function calls only find functions declared above it!
-            - also does mean to generate main last
-*/
-
 #include "generator.h"
 
-Generator::Generator(std::unique_ptr<NodeProgram> program)
-    : m_program(std::move(program)) {}
+Generator::Generator() = default;
 
-std::string Generator::generate() {
+std::string Generator::generate(const NodeProgram& program) {
     m_output << "ORG 0\n";
     m_output << "B main\n";
     m_output << "SP     EQU     R6\n";
     m_output << "stack  DATA    0x1200\n\n";
-    m_output << "main:\n";
+    
+    for (const auto& func : program.functions) {
+        generateFunction(*func);
+    }
+    
+    return m_output.str();
+}
+
+void Generator::generateFunction(const NodeFunction& func) {
+    m_output << func.name << ":\n";
     m_output << "MOV R1, #0\n";
     m_output << "MOV R2, #0\n";
     m_output << "MOV R3, #0\n";
     m_output << "MOV R4, #0\n";
     m_output << "MOV R5, #0\n";
     m_output << "LD SP, [R0, #stack]\n";
-    return m_output.str();
+    
+    m_stackOffset = 0;
+    
+    for (const auto& stmt : func.body->statements) {
+        stmt->accept(*this);
+    }
+}
+
+// Statement visitors
+void Generator::visit(const NodeVarDecl& node) {
+    node.rpn->accept(*this);
+    
+    m_output << "ST R1, [SP]\n";
+    m_output << "ADD SP, SP, #1\n";
+    m_stackOffset++;
+}
+
+void Generator::visit(const NodeArithmetic& node) {
+    for (const auto& expr : node.reversepolish) {
+        expr->accept(*this);
+    }
+}
+
+void Generator::visit(const NodeAssignment& node) {
+    // TODO: Implement assignment generation
+}
+
+void Generator::visit(const NodeReturn& node) {
+    // TODO: Implement return generation
+}
+
+// Expression visitors
+void Generator::visit(const NodeInteger& node) {
+    m_output << "LD R1, [PC, #1]\n";
+    m_output << "ADD PC, PC, #1\n";
+    m_output << "DEFW " << node.value.value.value() << "\n";
+}
+
+void Generator::visit(const NodeBoolean& node) {
+    m_output << "LD R1, [PC, #1]\n";
+    m_output << "ADD PC, PC, #1\n";
+    if (node.value.type == TokenType::TRUE) {
+        m_output << "DEFW 1\n";
+    } else {
+        m_output << "DEFW 0\n";
+    }
+}
+
+void Generator::visit(const NodeIdentifier& node) {
+    // TODO: Implement identifier generation
+}
+
+void Generator::visit(const NodeOperator& node) {
+    // TODO: Implement operator generation
+}
+
+void Generator::visit(const NodeFunctionCall& node) {
+    // TODO: Implement function call generation
 }

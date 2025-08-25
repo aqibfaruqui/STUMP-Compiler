@@ -89,21 +89,17 @@ std::unique_ptr<NodeBody> Parser::parseBody() {
 
 // Statement parser (one line of a body)
 std::unique_ptr<NodeStatement> Parser::parseStatement() {
-    auto stmt = std::make_unique<NodeStatement>();
-    
     TokenType t = peek().type;
-    while (!check(TokenType::SEMI)) {
-        switch (t) {
-        case TokenType::IDENTIFIER: return parseAssignment(); break;
-        case TokenType::INT:        return parseVarDecl(false); break;
-        case TokenType::BOOL:       return parseVarDecl(false); break;
-        case TokenType::RETURN:     return parseReturn(); break;
-        // case if/while
-        // case FPGA peripherals (make libraries to include?!)
-        default: break; // error? invalid statement start
-        }
+    switch (t) {
+    case TokenType::IDENTIFIER: return parseAssignment();
+    case TokenType::INT:        return parseVarDecl(false);
+    case TokenType::BOOL:       return parseVarDecl(false);
+    case TokenType::RETURN:     return parseReturn();
+    // case if/while
+    // case FPGA peripherals (make libraries to include?!)
+    default: 
+        throw std::runtime_error("Invalid statement start");
     }
-    return nullptr; // placeholder for error case
 }
 
 // Assignment parser 
@@ -142,10 +138,7 @@ std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
         if (t == TokenType::INT_LIT) {
             output.push_back(std::make_unique<NodeInteger>(advance()));
         }
-        else if (t == TokenType::TRUE) {
-            output.push_back(std::make_unique<NodeBoolean>(advance()));
-        }
-        else if (t == TokenType::FALSE) {
+        else if (t == TokenType::TRUE || t == TokenType::FALSE) {
             output.push_back(std::make_unique<NodeBoolean>(advance()));
         }
         else if (t == TokenType::IDENTIFIER) {
@@ -259,7 +252,7 @@ bool Parser::atEnd() {
 // ==================================== Error Handling ====================================
 
 std::runtime_error Parser::error(const Token& token) {
-    // include token name -> error handling
+    // TODO: include token name -> error handling
     std::string error_message;
     return std::runtime_error(error_message);
 }

@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <fstream>
 #include "lexer.h"
+#include "ast_visitor.h"
 
 struct NodeProgram;
 struct NodeFunction;
@@ -95,6 +96,7 @@ struct NodeBody {
 //---> Statement ∈ {Assignment, VarDecl, Return}
 struct NodeStatement {
     virtual ~NodeStatement() = default;
+    virtual void accept(ASTVisitor& visitor) const = 0;
 };
 
 struct NodeAssignment : NodeStatement {
@@ -103,6 +105,10 @@ struct NodeAssignment : NodeStatement {
     
     NodeAssignment(std::string n, std::unique_ptr<NodeArithmetic> r)
         : name(n), rpn(std::move(r)) {}
+    
+    void accept(ASTVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
 };
 
 struct NodeVarDecl : NodeStatement {
@@ -112,6 +118,10 @@ struct NodeVarDecl : NodeStatement {
 
     NodeVarDecl(std::string n, std::unique_ptr<NodeArithmetic> r, bool g = false)
         : name(n), rpn(std::move(r)), global(g) {}
+    
+    void accept(ASTVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
 };
 
 struct NodeArithmetic : NodeStatement {
@@ -119,6 +129,10 @@ struct NodeArithmetic : NodeStatement {
 
     NodeArithmetic(std::vector<std::unique_ptr<NodeExpression>> rpn)
         : reversepolish(std::move(rpn)) {}
+    
+    void accept(ASTVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
 };
 
 struct NodeReturn : NodeStatement {
@@ -126,11 +140,16 @@ struct NodeReturn : NodeStatement {
 
     NodeReturn(std::unique_ptr<NodeArithmetic> r)
         : rpn(std::move(r)) {}
+    
+    void accept(ASTVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
 };
 
 //---> Expression ∈ {Integer, Arithmetic, FunctionCall}
 struct NodeExpression {
     virtual ~NodeExpression() = default;
+    virtual void accept(ASTVisitor& visitor) const = 0;
 };
 
 struct NodeInteger : NodeExpression {
@@ -138,6 +157,10 @@ struct NodeInteger : NodeExpression {
 
     NodeInteger(Token v)
         : value(std::move(v)) {}
+    
+    void accept(ASTVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
 };
 
 struct NodeIdentifier : NodeExpression {
@@ -145,6 +168,10 @@ struct NodeIdentifier : NodeExpression {
 
     NodeIdentifier(Token v)
         : value(std::move(v)) {}
+    
+    void accept(ASTVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
 };
 
 struct NodeOperator : NodeExpression {
@@ -152,6 +179,10 @@ struct NodeOperator : NodeExpression {
 
     NodeOperator(Token v)
         : value(std::move(v)) {}
+    
+    void accept(ASTVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
 };
 
 struct NodeBoolean : NodeExpression {
@@ -159,6 +190,10 @@ struct NodeBoolean : NodeExpression {
 
     NodeBoolean(Token v)
         : value(std::move(v)) {}
+    
+    void accept(ASTVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
 };
 
 struct NodeFunctionCall : NodeExpression {
@@ -167,6 +202,10 @@ struct NodeFunctionCall : NodeExpression {
 
     NodeFunctionCall(Token v, std::vector<Token> i)
         : value(std::move(v)), inputs(std::move(i)) {}
+    
+    void accept(ASTVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
 };
 
 

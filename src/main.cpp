@@ -35,8 +35,8 @@ int main(int argc, char** argv) {
     std::cout << "successful parsing, now generating" << std::endl;
 
     //---> 3. GENERATE
-    Generator generator(std::move(program));
-    std::string output = generator.generate();
+    Generator generator;
+    std::string output = generator.generate(*program);
 
     std::cout << "code generated" << std::endl;
 

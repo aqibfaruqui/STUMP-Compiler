@@ -1,5 +1,5 @@
 fn main() -> int effects [] {
-    int x = 4;
+    int x = 8;
     bool y = true;
     return x;
 }

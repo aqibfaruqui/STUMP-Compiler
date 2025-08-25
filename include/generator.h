@@ -2,22 +2,33 @@
 #define GENERATOR_H
 
 #include <sstream>
+#include "ast_visitor.h"
 #include "parser.h"
 
-class Generator {
+class Generator : public ASTVisitor {
 public:
-    /* Constructor */
-    explicit Generator(std::unique_ptr<NodeProgram> program);
+    Generator();
     
-    /* Parsing abstract syntax tree from parser */
-    std::string generate();
+    std::string generate(const NodeProgram& program);
+    
+    // Statement visitors
+    void visit(const NodeVarDecl& node) override;
+    void visit(const NodeArithmetic& node) override;
+    void visit(const NodeAssignment& node) override;
+    void visit(const NodeReturn& node) override;
+    
+    // Expression visitors
+    void visit(const NodeInteger& node) override;
+    void visit(const NodeBoolean& node) override;
+    void visit(const NodeIdentifier& node) override;
+    void visit(const NodeOperator& node) override;
+    void visit(const NodeFunctionCall& node) override;
 
 private:
-    // TODO: Add generation methods
-
-    const std::unique_ptr<NodeProgram> m_program;
-    size_t m_linenumber;
+    void generateFunction(const NodeFunction& func);
+    
     std::stringstream m_output;
+    size_t m_stackOffset = 0;
 };
 
 #endif
