@@ -24,19 +24,20 @@ std::unique_ptr<NodeProgram> Parser::parse() {
 
 // Function parser
 std::unique_ptr<NodeFunction> Parser::parseFunction() {
-    /* function name(... */
+    /* fn name(... */
     consume(TokenType::FUNCTION);
     auto name = consume(TokenType::IDENTIFIER).value;
     consume(TokenType::LBRACKET);
 
     /* param1, param2)...*/
-    std::vector<std::string> parameters;
-    if (!check(TokenType::RBRACKET)) {
-        do {
-            parameters.push_back(consume(TokenType::IDENTIFIER).value.value());
-        } while (checkAdvance(TokenType::COMMA));
-    }
+    std::vector<std::string> parameters = parseParameters();
     consume(TokenType::RBRACKET);
+
+    /* -> int effects [] */
+    consume(TokenType::ARROW);
+    consume(TokenType::INT);        // expecting only INT return type for now
+    consume(TokenType::EFFECTS);
+    parseEffectList();
 
     /* { (body) ... */
     consume(TokenType::LBRACE);
@@ -44,6 +45,34 @@ std::unique_ptr<NodeFunction> Parser::parseFunction() {
 
     /* Function: name (parameters) {body} */
     return std::make_unique<NodeFunction>(name.value(), std::move(parameters), std::move(body));
+}
+
+// Function parameters parser
+std::vector<std::string> Parser::parseParameters() {
+    std::vector<std::string> parameters;
+    if (!check(TokenType::RBRACKET)) {
+        do {
+            parameters.push_back(consume(TokenType::IDENTIFIER).value.value());
+        } while (checkAdvance(TokenType::COMMA));
+    }
+    return parameters;
+}
+
+// Function effects parser
+void Parser::parseEffectList() {
+    consume(TokenType::LSQUARE);
+    
+    // for now, just skip any identifiers inside []
+    while (!check(TokenType::RSQUARE)) {
+        if (check(TokenType::IDENTIFIER)) {
+            advance(); // skip effect name
+        }
+        if (check(TokenType::COMMA)) {
+            advance(); // skip comma
+        }
+    }
+    
+    consume(TokenType::RSQUARE);
 }
 
 // Function Body parser
@@ -67,6 +96,7 @@ std::unique_ptr<NodeStatement> Parser::parseStatement() {
         switch (t) {
         case TokenType::IDENTIFIER: return parseAssignment(); break;
         case TokenType::INT:        return parseVarDecl(false); break;
+        case TokenType::BOOL:       return parseVarDecl(false); break;
         case TokenType::RETURN:     return parseReturn(); break;
         // case if/while
         // case FPGA peripherals (make libraries to include?!)
@@ -87,7 +117,13 @@ std::unique_ptr<NodeAssignment> Parser::parseAssignment() {
 
 // Variable declaration parser
 std::unique_ptr<NodeVarDecl> Parser::parseVarDecl(bool global = false) {    
-    consume(TokenType::INT);
+    TokenType varType = peek().type;
+    if (varType == TokenType::INT) {
+        consume(TokenType::INT);
+    } else if (varType == TokenType::BOOL) {
+        consume(TokenType::BOOL);
+    }
+    
     std::string name = consume(TokenType::IDENTIFIER).value.value();
     consume(TokenType::ASSIGN);
     std::unique_ptr<NodeArithmetic> expr = parseArithmetic();
@@ -106,13 +142,19 @@ std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
         if (t == TokenType::INT_LIT) {
             output.push_back(std::make_unique<NodeInteger>(advance()));
         }
+        else if (t == TokenType::TRUE) {
+            output.push_back(std::make_unique<NodeBoolean>(advance()));
+        }
+        else if (t == TokenType::FALSE) {
+            output.push_back(std::make_unique<NodeBoolean>(advance()));
+        }
         else if (t == TokenType::IDENTIFIER) {
             output.push_back(std::make_unique<NodeIdentifier>(advance()));
         }
         else if (isOperator(t)) {
             while (!operators.empty() && isOperator(operators.top()) &&
                    getPrecedence(getOperator(operators.top())) >= getPrecedence(getOperator(t))) {
-                output.push_back(std::make_unique<NodeOperator>(Token{operators.top()}));
+                output.push_back(std::make_unique<NodeOperator>(Token{operators.top(), std::nullopt}));
                 operators.pop();
             }
             operators.push(t);
@@ -124,7 +166,7 @@ std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
         }
         else if (t == TokenType::RBRACKET) {
             while (!operators.empty() && operators.top() != TokenType::LBRACKET) {
-                output.push_back(std::make_unique<NodeOperator>(Token{operators.top()}));
+                output.push_back(std::make_unique<NodeOperator>(Token{operators.top(), std::nullopt}));
                 operators.pop();
             }
             if (!operators.empty()) operators.pop();
@@ -136,7 +178,7 @@ std::unique_ptr<NodeArithmetic> Parser::parseArithmetic() {
     }
 
     while (!operators.empty()) {
-        output.push_back(std::make_unique<NodeOperator>(Token{operators.top()}));
+        output.push_back(std::make_unique<NodeOperator>(Token{operators.top(), std::nullopt}));
         operators.pop();
     }
 

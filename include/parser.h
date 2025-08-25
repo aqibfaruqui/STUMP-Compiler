@@ -37,6 +37,8 @@ public:
 private:
     /* Parsing different abstracted constructs */
     std::unique_ptr<NodeFunction> parseFunction();
+    std::vector<std::string> parseParameters();
+    void parseEffectList();
     std::unique_ptr<NodeBody> parseBody();
     std::unique_ptr<NodeStatement> parseStatement();
     std::unique_ptr<NodeAssignment> parseAssignment();
@@ -149,6 +151,13 @@ struct NodeOperator : NodeExpression {
     Token value;
 
     NodeOperator(Token v)
+        : value(std::move(v)) {}
+};
+
+struct NodeBoolean : NodeExpression {
+    Token value;
+
+    NodeBoolean(Token v)
         : value(std::move(v)) {}
 };
 
